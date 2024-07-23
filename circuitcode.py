@@ -3,42 +3,42 @@ import random
 import time
 #import modules from Pyfirmata
 from pyfirmata import Arduino,OUTPUT,INPUT,util
-#Create an ardunio board instance
+#Create an arduino board instance
 board=Arduino ("COM3")
 
-#Create a array to store the summary of the game
+#Create an array to store the summary of the game
 summy=[]
 
-#Set in digital pin number to indicate rock,paper,scissors,lizard and spock
+#Set the digital pin number to indicate rock, paper, scissors, lizard, and spock
 Rock=board.digital[2]
 Paper=board.digital[3]
 Scissors=board.digital[4]
 Lizard=board.digital[5]
 spock=board.digital[6]
-#Set up the these Led
+#Set up these LEDs
 for led in [Rock,Paper,Scissors,Lizard,spock]:
     led.mode=OUTPUT
 
-#Set in digital pin number to indicate the score
+#Set the digital pin number to indicate the score
 #Score1 and Score2 represent the User score / Score3 and Score4 represent the computer score 
 Score1=board.digital[7]
 Score2=board.digital[8]
 Score3=board.digital[9]
 Score4=board.digital[10]
-#Set up the these led
+#Set up these LEDs
 for score in [Score1,Score2,Score3,Score4]:
     score.mode=OUTPUT
 
-#Set in digital pin number to indicate the start/end led
+#Set the digital pin number to indicate the start/end LED
 Start_end_Bulb=board.digital[11]
-#Set up the led
+#Set up the LED
 Start_end_Bulb.mode=OUTPUT
 
-#set in piezzor buzzer and set up 
+#set up the piezo buzzer
 piezzor=board.digital[12]
 piezzor.mode=OUTPUT
 
-#Set in switches for choices using analog pin
+#Set up switches for choices using analog pin
 switch_rock=board.analog[4]
 switch_paper=board.analog[3]
 switch_scissors=board.analog[2]
@@ -47,7 +47,7 @@ switch_spock=board.analog[0]
 for switch in [switch_rock,switch_paper,switch_scissors,switch_lizzard,switch_spock]:
     switch.enable_reporting()
 
-#Switch for Start/end the game
+#Switch for Starting/ending the game
 Start_end_switch=board.digital[13]
 Start_end_switch.mode=INPUT
 
@@ -59,19 +59,19 @@ round=0
 Computer_score=0
 User_score=0
 
-#indicate state is true>led is on the game is begin
+#indicator state is true -> if the LED is on, it means the game has begun
 indicator_state=False
 #calculate time
 start_time=0
 
-#==================================================Who is winner each round=========================================
+#==================================================Who is the winner of each round=========================================
 def who_is_winner(user_select_element):
     global round,Computer_score,User_score
-    #choise of compuetr 
+    #choice of compuetr 
     selected=["Rock","Paper","Scissors","Lizard","Spock"]
     computer_select_element=random.choice(selected)
     print("Computer choice:",computer_select_element)
-    #Indicate the bulb(computer chioice)
+    #Indicate the bulb(computer choice)
     computer_leds={
         "Rock":Rock,
         "Paper":Paper,
@@ -80,16 +80,17 @@ def who_is_winner(user_select_element):
         "Spock":spock
     }
     
+    #Before starting the next round, all the LEDs are turned off
     for led in [Rock,Paper,Scissors,Lizard,spock]:
         led.write(0)
     
-    #led one corrosponding to computer choice
+    #LED one corrosponding to the computer choice
     computer_leds[computer_select_element].write(1)
     time.sleep(0.2)
     
     if computer_select_element==user_select_element:
-        summy.append(["Round "+str(round),"User choise: "+user_select_element,"Computer choise: "+computer_select_element,f"The game is tie"])
-        print("The game is tie...")
+        summy.append(["Round "+str(round),"User choice: "+user_select_element,"Computer choice: "+computer_select_element,f"The game is tied"])
+        print("The game is tiec...")
     else:
         win_conditions={
             "Rock":["Scissors","Lizard"],
@@ -99,10 +100,10 @@ def who_is_winner(user_select_element):
             "Spock":["Rock","Scissors"]
         }
         if user_select_element in win_conditions[computer_select_element]:
-            summy.append(["Round "+str(round),"user choise:"+user_select_element,"coumputer choice:"+computer_select_element,f"The winner is  coumputer"])
+            summy.append(["Round "+str(round),"User choice:"+user_select_element,"Computer choice:"+computer_select_element,f"The winner is computer"])
             Computer_score+=1
         else:
-            summy.append(["Round "+str(round),"user choise:"+user_select_element,"computer choise:"+computer_select_element,f"The winner is user"])
+            summy.append(["Round "+str(round),"User choice:"+user_select_element,"Computer choice:"+computer_select_element,f"The winner is user"])
             User_score+=1
     Score(User_score,Computer_score)
 
@@ -122,7 +123,7 @@ def Score(User_score,Computer_score):
     elif User_score==3:
         Score1.write(1)
         Score2.write(1)
-    #display the coumputer score
+    #display the computer score
     if Computer_score==1:
         Score3.write(1)
     elif Computer_score==2:
@@ -132,10 +133,10 @@ def Score(User_score,Computer_score):
         Score4.write(1)
     
 
-#=====================================next round founction===============================================================
+#=====================================Function for the nest round===============================================================
 def Go_nextt_round():
     global round,start_time
-    #the indicater is blink and go next round
+    #the indicater will blink and go to the next round
     for _ in range(5):
         Start_end_Bulb.write(0)
         time.sleep(0.5)
@@ -148,10 +149,10 @@ def Go_nextt_round():
         led.write(0)
     round+=1
     start_time=time.time()
-    print("Next Round is beginning ......")
-    print("-----------------------------Round",round,'-----------------------------------------------')
+    print("Next Round is starting ......")
+    print("-----------------------------Round",round,"-----------------------------------------------")
 
-#=================================End fuction======================================
+#=================================End function======================================
 def End_the_game():
     global round,Computer_score,User_score,round,summy,indicator_state
     print("End the game")
@@ -159,15 +160,40 @@ def End_the_game():
     indicator_state=False
     round=0
     if Computer_score>User_score:
-        print("The winner is Coumpter")
+        print("The winner is computer")
+        for _ in range(10):
+            Score3.write(1)
+            Score4.write(1)
+            time.sleep(0.5)
+            Score3.write(0)
+            Score4.write(0)
+            time.sleep(0.5)
+
     elif User_score>Computer_score:
         print("The winner is user")
+        for _ in range(10):
+            Score1.write(1)
+            Score2.write(1)
+            time.sleep(0.5)
+            Score1.write(0)
+            Score2.write(0)
+            time.sleep(0.5)
     else:
-        print("The game is tie")
+        print("The game is tied")
+        for _ in range(5):
+            Score1.write(1)
+            Score2.write(1)
+            Score3.write(1)
+            Score4.write(1)
+            time.sleep(0.5)
+            Score1.write(0)
+            Score2.write(0)
+            Score3.write(0)
+            Score4.write(0)
+            time.sleep(0.5)
     User_score=0
     Computer_score=0
-    #----------------------
-    #print("bilnk 5 led...............................................")
+
     for _ in range(10):
         for led in [Rock,Paper,Scissors,Lizard,spock]:
             led.write(0)
@@ -176,7 +202,7 @@ def End_the_game():
             led.write(1)
         time.sleep(0.5)
     
-    print("Summry of the game...")
+    print("Summary of the game...")
     print_score()
     summy=[]
 
@@ -185,50 +211,49 @@ def End_the_game():
     for led in [Rock,Paper,Scissors,Lizard,spock]:
             led.write(0)
 
-#=======================print score in terminal==================================================
+#=======================Print the score in the terminal==================================================
 def print_score():
     for i in summy:
         print(i)
-#=================================pizzo buzzer======================================================
+#=================================Piezo buzzer======================================================
 def buzz(duration):
-    #print("Buzzing......")
     piezzor.write(1)
     time.sleep(duration)
     piezzor.write(0)
 
-
-while True:
-    if round ==8:
-        buzz(0.8)
-        End_the_game()
-
+def check():
+    global round,Computer_score,User_score
     if Computer_score==4 or User_score==4:
         buzz(0.8)
         End_the_game()
+    elif round ==7:
+        buzz(0.8)
+        End_the_game()
 
-    #first check the press start button
+while True:
+    #First check if the start button is pressed
     indicator_button_state=Start_end_switch.read()
     time.sleep(0.1)
     if indicator_button_state==True:
         if indicator_state==True:
             print("Ending the game........")
-            #The game  is end
+            #The game has ended
             buzz(1)
             End_the_game()
         else:
-            #The game is start
+            #The game has started
             print("Starting the game......")
             indicator_state=True
             Start_end_Bulb.write(1)
             #variable define
             round=1
-            print("Round",round)
+            print("-----------------------------Round",round,"-----------------------------------------------")
             time.sleep(0.2)
-            #first round time is begin
+            #first round - time has begun
             start_time=time.time()
     if indicator_state==True:
-        #then check user chhose the item in 3min
-        if time.time()-start_time<=30:
+        #then check if the user chose the item under 3mins
+        if time.time()-start_time<=3:
             a=switch_lizzard.read()
             b=switch_paper.read()
             c=switch_rock.read()
@@ -241,10 +266,12 @@ while True:
                     Lizard.write(0)
 
                     print("Your choice: Lizard")
-                    print("waiting...")
-                    time.sleep(10)
+                    print("Waiting...")
+                    time.sleep(1)
                     who_is_winner("Lizard")
-                    Go_nextt_round()
+                    check()
+                    if round!=0:
+                        Go_nextt_round()
                 elif b>0.5:
                     Paper.write(1)
                     time.sleep(0.5)
@@ -252,47 +279,56 @@ while True:
 
                     print("Your choice: paper")
                     print("Waiting....")
-                    time.sleep(10)
+                    time.sleep(1)
                     who_is_winner("Paper")
-                    Go_nextt_round()
+                    check()
+                    if round!=0:
+                        Go_nextt_round()
                 elif c>0.5:
                     Rock.write(1)
                     time.sleep(0.5)
                     Rock.write(0)
 
-                    print("Youre choice: Rock")
-                    print("waiting....")
-                    time.sleep(10)
+                    print("Your choice: Rock")
+                    print("Waiting....")
+                    time.sleep(1)
                     who_is_winner("Rock")
-                    Go_nextt_round()
+                    check()
+                    if round!=0:
+                        Go_nextt_round()
                 elif d>0.5:
                     Scissors.write(1)
                     time.sleep(0.5)
                     Scissors.write(0)
 
                     print("Your choice: Scissors")
-                    print("waiting...")
-                    time.sleep(10)
+                    print("Waiting...")
+                    time.sleep(1)
                     who_is_winner("Scissors")
-                    Go_nextt_round()
+                    check()
+                    if round!=0:
+                        Go_nextt_round()
                 elif e>0.5:
                     spock.write(1)
                     time.sleep(0.5)
                     spock.write(0)
 
-                    print("your choice:  Spock")
-                    print("waiting...")
-                    time.sleep(10)
+                    print("Your choice: Spock")
+                    print("Waiting...")
+                    time.sleep(1)
                     who_is_winner("Spock")
-                    Go_nextt_round() 
+                    check()
+                    if round!=0:
+                        Go_nextt_round() 
         else:
             print("Time has passed....")
-            summy.append(["Round "+str(round),"The time has passed",f"The winner is  coumputer"])
+            summy.append(["Round "+str(round),"The time has passed",f"The winner is coumputer"])
             Computer_score+=1
             Start_end_Bulb.write(0)
             buzz(1)
             Score(User_score,Computer_score)
-            time.sleep(10)
-            Go_nextt_round()
-            Start_end_Bulb.write(1)
-    
+            time.sleep(1)
+            check()
+            if round!=0:
+                Go_nextt_round()
+                Start_end_Bulb.write(1)
